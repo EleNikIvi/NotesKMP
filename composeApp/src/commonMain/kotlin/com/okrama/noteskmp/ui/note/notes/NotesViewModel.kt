@@ -3,7 +3,6 @@ package com.okrama.noteskmp.ui.note.notes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import co.touchlab.kermit.Logger
 import com.okrama.noteskmp.domain.category.CategoryInteractor
 import com.okrama.noteskmp.domain.note.NoteInteractor
 import com.okrama.noteskmp.model.Note
@@ -80,9 +79,8 @@ class NotesViewModel(
         _selectedCategory.asStateFlow(),
     ) { notes, notesForCategory, persistedState, searchTerm, selectedCategory ->
 
-        val currentNotes =
-            if (selectedCategory == FILTER_ALL) notes
-            else notesForCategory
+        val currentNotes = if (selectedCategory == FILTER_ALL) notes
+        else notesForCategory
 
         val filteredNotes =
             currentNotes.filter {
@@ -171,7 +169,7 @@ class NotesViewModel(
     }
 
     private fun updateNotes(notes: List<Note>?) {
-        _notesForCategory.value = notes ?: emptyList()
+        _notesForCategory.update { notes ?: emptyList() }
     }
 
     private fun constructInitialUiState(): NotesScreenState = NotesScreenState()
