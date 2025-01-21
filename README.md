@@ -34,7 +34,7 @@ In case of some issue with setting up the environment, please [consult here](htt
 ---
 
 ### It is a simple app for storing and managing notes which contains the following features:
-1. List of all notes. User can search for a note by title and filter notes by category. From this screen, notes can be created, edited, and deleted.
+1. List of all notes. User can search for a note by title, and also filter notes by category. From this screen, notes can be created, edited, and deleted.
 2. Screen for adding new category.
 3. Screen for adding/editing notes.
 
