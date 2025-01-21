@@ -1,12 +1,16 @@
 ## NotesKMP is a Kotlin Multiplatform project targeting Android, iOS.
 
-<image src="https://github.com/user-attachments/assets/ed6fd623-73c9-467c-ae1c-570ed96d1a10" width="30%" />
+<image src="https://github.com/user-attachments/assets/ed6fd623-73c9-467c-ae1c-570ed96d1a10" width="20%" />
 
 
-<image src="https://github.com/user-attachments/assets/90db4edb-d264-4f8b-8aa8-77488b3807ab" width="30%" />
+<image src="https://github.com/user-attachments/assets/90db4edb-d264-4f8b-8aa8-77488b3807ab" width="20%" />
 
 
-<image src="https://github.com/user-attachments/assets/976e0bbc-9fa6-445e-aa0f-c2c317531822" width="30%" />
+<image src="https://github.com/user-attachments/assets/976e0bbc-9fa6-445e-aa0f-c2c317531822" width="20%" />
+
+
+<image src="https://github.com/user-attachments/assets/06485173-4d4a-4643-b2a0-2611dbd0c763" width="20%" />
+
 
 ---
 <details>
@@ -37,6 +41,7 @@ In case of some issue with setting up the environment, please [consult here](htt
 1. List of all notes. User can search for a note by title, and also filter notes by category. From this screen, notes can be created, edited, and deleted.
 2. Screen for adding new category.
 3. Screen for adding/editing notes.
+4. Screen with note details.
 
 ### Architecture and design decisions:
 * The application is built upon the foundation of "Clean Architecture". All logic is separated into 3 layers UI, Domain, and Data. The domain layer communicates with the Data layer using repository interfaces.
