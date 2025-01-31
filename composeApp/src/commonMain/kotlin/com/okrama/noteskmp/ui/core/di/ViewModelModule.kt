@@ -10,7 +10,7 @@ import org.koin.dsl.module
 
 val viewModelModule = module {
     viewModel<NotesViewModel> { (handle: SavedStateHandle) ->
-        NotesViewModel(get(), get(), handle)
+        NotesViewModel( handle, get(), get())
     }
     viewModel<AddCategoryViewModel> { (handle: SavedStateHandle) ->
         AddCategoryViewModel(get(), handle)

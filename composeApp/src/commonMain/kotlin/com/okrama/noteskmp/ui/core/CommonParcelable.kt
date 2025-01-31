@@ -1,9 +1,6 @@
 package com.okrama.noteskmp.ui.core
 
-/*@OptIn(ExperimentalMultiplatform::class)
-@OptionalExpectation
-@Target(AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.BINARY)*/
+
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.BINARY)
 annotation class CommonParcelize()

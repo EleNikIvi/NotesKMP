@@ -16,9 +16,7 @@ data class NotesScreenState(
     val notes: List<Note> = emptyList(),
     val search: String = "",
     val categories: ImmutableList<FilterRailItem> = persistentListOf(),
-    val selectedCategory: FilterRailItem = FilterRailItem(
-        id = FILTER_ALL.id,
-    ),
+    val selectedCategory: FilterRailItem = FILTER_ALL,
     val isRefreshing: Boolean = false,
 )
 

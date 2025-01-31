@@ -1,3 +1,4 @@
+import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -45,6 +46,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
             implementation(libs.accompanist.insets)
+            implementation(libs.mockk)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -70,6 +72,18 @@ kotlin {
 
             implementation(libs.navigation.compose)
         }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlin.test.annotations.common)
+            implementation(libs.assertk)
+
+            @OptIn(ExperimentalComposeLibrary::class)
+            implementation(compose.uiTest)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.koinTest)
+            implementation(libs.turbine)
+            implementation(libs.mockk.common)
+        }
     }
 }
 
@@ -87,6 +101,8 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            merges += "META-INF/LICENSE.md"
+            merges += "META-INF/LICENSE-notice.md"
         }
     }
     buildTypes {

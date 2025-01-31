@@ -20,9 +20,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class NotesViewModel(
+    savedStateHandle: SavedStateHandle,
     private val noteInteractor: NoteInteractor,
     private val categoryInteractor: CategoryInteractor,
-    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val _persistedState = savedStateHandle.saveableStateFlow(
         key = "notes-view-model-state-key",
@@ -42,7 +42,7 @@ class NotesViewModel(
     )
 
     private val _selectedCategory = savedStateHandle.saveableStateFlow(
-        key = "notes-view-model-search-key",
+        key = "notes-view-model-selected-category-key",
         initialValue = FILTER_ALL,
     )
 
@@ -103,7 +103,7 @@ class NotesViewModel(
     )
 
     fun onSearchTermChange(searchTerm: String) {
-        _searchTerm.update { searchTerm }
+        _searchTerm.value = searchTerm
     }
 
     fun onSearchFieldClear() {
