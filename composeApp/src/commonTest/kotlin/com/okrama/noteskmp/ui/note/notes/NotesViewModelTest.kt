@@ -14,6 +14,7 @@ import com.okrama.noteskmp.runViewModelTest
 import com.okrama.noteskmp.ui.core.components.filterrail.model.FILTER_ALL
 import com.okrama.noteskmp.ui.core.components.filterrail.model.FilterRailItem
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
@@ -63,6 +64,16 @@ class NotesViewModelTest : MainDispatcherTest() {
     }
 
     @Test
+    fun `WHEN the saved state is empty and the viewmodel is created THEN the screen state holds initial content and no side effect fires`() {
+        val underTestVm = createViewModelInstance()
+        runViewModelTest(underTestVm.screenState, underTestVm.sideEffect) { state, effect ->
+            effect.expectNoEvents()
+            assertEquals(initialScreenState, state.awaitItem())
+            state.expectNoEvents()
+        }
+    }
+
+    @Test
     fun `WHEN search changes THEN initial state is updated`() {
         val underTestVm = createViewModelInstance()
         runViewModelTest(underTestVm.screenState, underTestVm.sideEffect) { state, effect ->
@@ -91,6 +102,20 @@ class NotesViewModelTest : MainDispatcherTest() {
     }
 
     @Test
+    fun `WHEN note is deleted THEN function of NoteInteractor for deleting note is fires`() {
+        val underTestVm = createViewModelInstance()
+        runViewModelTest(underTestVm.screenState, underTestVm.sideEffect) { state, effect ->
+            effect.expectNoEvents()
+            assertEquals(initialScreenState, state.awaitItem())
+            underTestVm.onDeleteNote(note1.noteId)
+
+            coVerify(exactly = 1) {
+                noteInteractorMock.deleteNote(note1.noteId)
+            }
+        }
+    }
+
+    @Test
     fun `WHEN category changes THEN state is updated for this category`() {
         val expectedState = NotesScreenState(
             notes = persistentListOf(note1, note3),
@@ -104,6 +129,9 @@ class NotesViewModelTest : MainDispatcherTest() {
             assertEquals(initialScreenState, state.awaitItem())
             underTestVm.onCategoryChange(filterRailItem3.id)
 
+            coVerify(exactly = 1) {
+                noteInteractorMock.getNotesBy(filterRailItem3.id)
+            }
             assertEquals(expectedState, state.expectMostRecentItem())
         }
     }
@@ -165,7 +193,7 @@ class NotesViewModelTest : MainDispatcherTest() {
     }
 
     @Test
-    fun `WHEN ViewModel created with SavedStateHandle for for search THEN state should be restored`() {
+    fun `WHEN ViewModel created with SavedStateHandle for search THEN state should be restored`() {
         val savedStateHandle = SavedStateHandle(
             mapOf(SEARCH_KEY to SEARCH)
         )
@@ -190,7 +218,7 @@ class NotesViewModelTest : MainDispatcherTest() {
     }
 
     @Test
-    fun `WHEN ViewModel created with SavedStateHandle for for category THEN state should be restored`() {
+    fun `WHEN ViewModel created with SavedStateHandle for category THEN state should be restored`() {
         val savedStateHandle = SavedStateHandle(
             mapOf(SELECTED_CATEGORY_KEY to filterRailItem3)
         )
