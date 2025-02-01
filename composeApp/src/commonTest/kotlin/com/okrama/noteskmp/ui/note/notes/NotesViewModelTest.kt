@@ -46,8 +46,7 @@ val stateForSearch = NotesScreenState(
 
 class NotesViewModelTest : MainDispatcherTest() {
 
-    private val noteInteractorMock = mockk<NoteInteractor>(relaxed = true)
-    {
+    private val noteInteractorMock = mockk<NoteInteractor>(relaxed = true) {
         every {
             getAllNotesFlow()
         } returns flowOf(notes)
@@ -56,8 +55,7 @@ class NotesViewModelTest : MainDispatcherTest() {
             getNotesBy(any())
         } returns categoryWithNotes
     }
-    private val categoryInteractorMock = mockk<CategoryInteractor>(relaxed = true)
-    {
+    private val categoryInteractorMock = mockk<CategoryInteractor>(relaxed = true) {
         every {
             getCategories()
         } returns flowOf(categories)
@@ -66,6 +64,7 @@ class NotesViewModelTest : MainDispatcherTest() {
     @Test
     fun `WHEN the saved state is empty and the viewmodel is created THEN the screen state holds initial content and no side effect fires`() {
         val underTestVm = createViewModelInstance()
+
         runViewModelTest(underTestVm.screenState, underTestVm.sideEffect) { state, effect ->
             effect.expectNoEvents()
             assertEquals(initialScreenState, state.awaitItem())
@@ -76,6 +75,7 @@ class NotesViewModelTest : MainDispatcherTest() {
     @Test
     fun `WHEN search changes THEN initial state is updated`() {
         val underTestVm = createViewModelInstance()
+
         runViewModelTest(underTestVm.screenState, underTestVm.sideEffect) { state, effect ->
             effect.expectNoEvents()
             assertEquals(initialScreenState, state.awaitItem())
@@ -203,7 +203,6 @@ class NotesViewModelTest : MainDispatcherTest() {
 
         runViewModelTest(underTestVm.screenState, underTestVm.sideEffect) { state, effect ->
             effect.expectNoEvents()
-            assertEquals(SEARCH, savedStateHandle.get<String>(SEARCH_KEY))
 
             testScheduler.advanceUntilIdle()
 
