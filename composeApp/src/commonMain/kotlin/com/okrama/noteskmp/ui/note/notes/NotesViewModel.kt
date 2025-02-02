@@ -11,13 +11,20 @@ import com.okrama.noteskmp.ui.core.components.filterrail.model.FilterRailItem
 import com.okrama.noteskmp.ui.core.flow.SaveableStateFlow.Companion.saveableStateFlow
 import com.okrama.noteskmp.ui.note.notes.CategoriesFilterRail.getCategoriesFilterRail
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+internal const val SEARCH_KEY = "notes-view-model-search-key"
+internal const val SELECTED_CATEGORY_KEY = "notes-view-model-selected-category-key"
 
 class NotesViewModel(
     savedStateHandle: SavedStateHandle,
@@ -37,36 +44,16 @@ class NotesViewModel(
         initialValue = emptyList<Note>(),
     )
     private val _searchTerm = savedStateHandle.saveableStateFlow(
-        key = "notes-view-model-search-key",
+        key = SEARCH_KEY,
         initialValue = "",
     )
-
     private val _selectedCategory = savedStateHandle.saveableStateFlow(
-        key = "notes-view-model-selected-category-key",
+        key = SELECTED_CATEGORY_KEY,
         initialValue = FILTER_ALL,
     )
 
-    init {
-        viewModelScope.launch {
-            launch {
-                noteInteractor.getAllNotesFlow()
-                    .collect { values ->
-                        _allNotes.update { values }
-                        loadNotes(_selectedCategory.value)
-                    }
-            }
-            launch {
-                categoryInteractor.getCategories()
-                    .collect { values ->
-                        _persistedState.update {
-                            it.copy(
-                                filterCategories = getCategoriesFilterRail(values)
-                            )
-                        }
-                    }
-            }
-        }
-    }
+    private var allNotesJob: Job? = null
+    private var allCategoriesJob: Job? = null
 
     private val _sideEffect = Channel<NotesSideEffect>()
     val sideEffect = _sideEffect.receiveAsFlow()
@@ -96,6 +83,9 @@ class NotesViewModel(
             search = searchTerm,
             selectedCategory = _selectedCategory.value,
         )
+    }.onStart {
+        observeAllNotes()
+        observeAllCategories()
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -158,6 +148,26 @@ class NotesViewModel(
                 NotesSideEffect.NavigateToAddCategoryScreen
             )
         }
+    }
+
+    private fun observeAllNotes() {
+        allNotesJob?.cancel()
+        allNotesJob = noteInteractor.getAllNotesFlow().onEach { values ->
+            _allNotes.update { values }
+            loadNotes(_selectedCategory.value)
+        }.launchIn(viewModelScope)
+    }
+
+    private fun observeAllCategories() {
+        allCategoriesJob?.cancel()
+        allCategoriesJob = categoryInteractor.getCategories()
+            .onEach { values ->
+                _persistedState.update {
+                    it.copy(
+                        filterCategories = getCategoriesFilterRail(values)
+                    )
+                }
+            }.launchIn(viewModelScope)
     }
 
     private fun loadNotes(category: FilterRailItem) {

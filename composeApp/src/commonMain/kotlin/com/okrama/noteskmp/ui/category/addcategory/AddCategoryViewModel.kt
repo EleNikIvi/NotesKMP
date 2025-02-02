@@ -4,12 +4,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.okrama.noteskmp.domain.category.CategoryInteractor
-import com.okrama.noteskmp.model.EMPTY_CATEGORY_ID
 import com.okrama.noteskmp.ui.core.flow.SaveableStateFlow.Companion.saveableStateFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -20,36 +20,29 @@ class AddCategoryViewModel(
     private val categoryInteractor: CategoryInteractor,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    private val _categoryId =
-        savedStateHandle.get<Long>(CATEGORY_ID_KEY) ?: EMPTY_CATEGORY_ID
 
     private val _categoryName = savedStateHandle.saveableStateFlow(
         key = "add_category-view-model-name-key",
         initialValue = "",
     )
-    private val _savedCategoryId = savedStateHandle.saveableStateFlow(
-        key = "add_category-view-model-saved-key",
-        initialValue = EMPTY_CATEGORY_ID,
-    )
 
     private val _sideEffect = Channel<AddCategorySideEffect>()
     val sideEffect = _sideEffect.receiveAsFlow()
 
-    val screenState: StateFlow<AddCategoryScreenState> = combine(
-        _categoryName.asStateFlow(),
-        _savedCategoryId.asStateFlow(),
-    ) { categoryName, savedCategoryId ->
-        val canSave = categoryName.isNotBlank()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val screenState: StateFlow<AddCategoryScreenState> =
+        _categoryName.asStateFlow().mapLatest { categoryName ->
+            val canSave = categoryName.isNotBlank()
 
-        AddCategoryScreenState(
-            title = categoryName,
-            canSave = canSave,
+            AddCategoryScreenState(
+                title = categoryName,
+                canSave = canSave,
+            )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = AddCategoryScreenState()
         )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = AddCategoryScreenState()
-    )
 
     fun onCategoryNameChange(categoryName: String) {
         _categoryName.update { categoryName }

@@ -17,7 +17,7 @@ class CategoryRepositoryImpl(
 
     override fun getCategories(): Flow<List<Category>> = categoryDao.getCategoriesFlow()
 
-    override suspend fun getCategoryForNote(noteId: Long): Flow<NoteWithCategory?> =
+    override fun getCategoryForNote(noteId: Long): Flow<NoteWithCategory?> =
         noteDao.getCategoryWithNoteFlow(noteId = noteId)
 
     override suspend fun addCategory(category: Category): Long =

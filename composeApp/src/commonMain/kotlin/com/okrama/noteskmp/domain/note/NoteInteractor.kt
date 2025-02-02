@@ -12,7 +12,7 @@ class NoteInteractor(
     suspend fun getNotesBy(categoryId: Long): CategoryWithNotes? =
         noteRepository.getNotesBy(categoryId = categoryId)
 
-    suspend fun getNoteFlow(noteId: Long): Flow<Note> = noteRepository.getNoteFlow(noteId = noteId)
+    fun getNoteFlow(noteId: Long): Flow<Note> = noteRepository.getNoteFlow(noteId = noteId)
 
     suspend fun addNote(
         title: String,

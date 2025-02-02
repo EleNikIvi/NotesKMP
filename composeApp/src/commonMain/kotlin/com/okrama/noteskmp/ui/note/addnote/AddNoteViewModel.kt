@@ -11,11 +11,15 @@ import com.okrama.noteskmp.ui.core.flow.SaveableStateFlow.Companion.saveableStat
 import com.okrama.noteskmp.ui.core.model.CategoryUtil
 import com.okrama.noteskmp.ui.note.addnote.Categories.getCategoriesDropdown
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -43,6 +47,10 @@ class AddNoteViewModel(
         initialValue = emptyList<Category>(),
     )
 
+    private var noteJob: Job? = null
+    private var categoryForNoteJob: Job? = null
+    private var allCategoriesJob: Job? = null
+
     private val _sideEffect = Channel<AddNoteSideEffect>()
     val sideEffect = _sideEffect.receiveAsFlow()
 
@@ -56,56 +64,17 @@ class AddNoteViewModel(
                 categoriesDropdown = persistedState.categoriesDropdown,
                 canSave = persistedState.title.isNotBlank() && persistedState.isChanged,
             )
+        }.onStart {
+            if (_noteId != EMPTY_NOTE_ID) {
+                observeNoteDetails()
+                observeCategoryForNote()
+            }
+            observeAllCategories()
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = AddNoteScreenState()
         )
-
-    init {
-        viewModelScope.launch {
-            if (_noteId != EMPTY_NOTE_ID) {
-                launch {
-                    noteInteractor.getNoteFlow(_noteId)
-                        .collect { note ->
-                            _initialTitle.value = note.title
-                            _initialDescription.value = note.description
-                            _persistedState.update {
-                                it.copy(
-                                    title = note.title,
-                                    description = note.description,
-                                )
-                            }
-                        }
-                }
-                launch {
-                    categoryInteractor.getCategoryForNote(_noteId).collect { noteWithCategory ->
-                        noteWithCategory?.category?.let { category ->
-                            updateSelectedCategory(category)
-                            _initialCategory.value = category
-                        } ?: run {
-                            updateSelectedCategory(CategoryUtil.CATEGORY_ALL)
-                            _initialCategory.value = CategoryUtil.CATEGORY_ALL
-                        }
-                    }
-                }
-            }
-            launch {
-                categoryInteractor.getCategories()
-                    .collect { values ->
-                        _categories.value = values
-                        _persistedState.update {
-                            it.copy(
-                                categoriesDropdown = getCategoriesDropdown(
-                                    values,
-                                    it.selectedCategory
-                                )
-                            )
-                        }
-                    }
-            }
-        }
-    }
 
     fun onAddCategorySelected() {
         viewModelScope.launch {
@@ -141,18 +110,6 @@ class AddNoteViewModel(
         }
     }
 
-    private fun updateSelectedCategory(selectedCategory: Category) {
-        _persistedState.update {
-            it.copy(
-                selectedCategory = selectedCategory,
-                categoriesDropdown = it.categoriesDropdown.copy(
-                    value = selectedCategory.title
-                )
-            )
-        }
-        updateIsChanged()
-    }
-
     fun saveNote() {
         viewModelScope.launch {
             val noteId = if (_noteId != EMPTY_NOTE_ID) {
@@ -184,6 +141,63 @@ class AddNoteViewModel(
                 AddNoteSideEffect.NavigateBack
             )
         }
+    }
+
+    private fun observeNoteDetails() {
+        noteJob?.cancel()
+        noteJob = noteInteractor.getNoteFlow(_noteId)
+            .onEach { note ->
+                _initialTitle.value = note.title
+                _initialDescription.value = note.description
+                _persistedState.update {
+                    it.copy(
+                        title = note.title,
+                        description = note.description,
+                    )
+                }
+            }.launchIn(viewModelScope)
+    }
+
+    private fun observeCategoryForNote() {
+        categoryForNoteJob?.cancel()
+        categoryForNoteJob =
+            categoryInteractor.getCategoryForNote(_noteId).onEach { noteWithCategory ->
+                noteWithCategory?.category?.let { category ->
+                    updateSelectedCategory(category)
+                    _initialCategory.value = category
+                } ?: run {
+                    updateSelectedCategory(CategoryUtil.CATEGORY_ALL)
+                    _initialCategory.value = CategoryUtil.CATEGORY_ALL
+                }
+            }.launchIn(viewModelScope)
+    }
+
+    private fun observeAllCategories() {
+        allCategoriesJob?.cancel()
+        allCategoriesJob = categoryInteractor.getCategories()
+            .onEach { values ->
+                _categories.value = values
+                _persistedState.update {
+                    it.copy(
+                        categoriesDropdown = getCategoriesDropdown(
+                            values,
+                            it.selectedCategory
+                        )
+                    )
+                }
+            }.launchIn(viewModelScope)
+    }
+
+    private fun updateSelectedCategory(selectedCategory: Category) {
+        _persistedState.update {
+            it.copy(
+                selectedCategory = selectedCategory,
+                categoriesDropdown = it.categoriesDropdown.copy(
+                    value = selectedCategory.title
+                )
+            )
+        }
+        updateIsChanged()
     }
 
     private fun updateIsChanged() {

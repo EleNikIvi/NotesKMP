@@ -33,6 +33,7 @@ testCoreKtx = "1.6.1"
 composeTest = "1.7.6"
 kotlinx-coroutines-test = "1.8.0"
 turbine = "1.1.0"
+koverVersion = "0.7.6"
 
 [libraries]
 accompanist-insets = { module = "com.google.accompanist:accompanist-insets", version.ref = "accompanistInsets" }
@@ -80,3 +81,4 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 room = { id = "androidx.room", version.ref = "room" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize",  version.ref = "kotlinPlugin"  }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref="koverVersion" }

@@ -9,7 +9,7 @@ class CategoryInteractor(
 ) {
     fun getCategories(): Flow<List<Category>> = categoryRepository.getCategories()
 
-    suspend fun getCategoryForNote(noteId: Long): Flow<NoteWithCategory?> =
+    fun getCategoryForNote(noteId: Long): Flow<NoteWithCategory?> =
         categoryRepository.getCategoryForNote(noteId = noteId)
 
     suspend fun addCategory(

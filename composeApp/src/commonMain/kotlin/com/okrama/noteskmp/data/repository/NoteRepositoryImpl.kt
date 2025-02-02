@@ -20,7 +20,7 @@ class NoteRepositoryImpl(
 
     override fun getAllNotesFlow(): Flow<List<Note>> = noteDao.getAllNotesFlow()
 
-    override suspend fun getNoteFlow(noteId: Long): Flow<Note> = noteDao.getNoteFlow(id = noteId)
+    override fun getNoteFlow(noteId: Long): Flow<Note> = noteDao.getNoteFlow(id = noteId)
 
     override suspend fun getNotesBy(categoryId: Long): CategoryWithNotes? =
         categoryDao.getCategoryWithNotes(categoryId = categoryId)

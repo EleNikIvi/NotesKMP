@@ -23,9 +23,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 private const val SEARCH = "1"
-private const val SEARCH_KEY = "notes-view-model-search-key"
 private val FILTER_RAIL_ALL = FILTER_ALL
-private const val SELECTED_CATEGORY_KEY = "notes-view-model-selected-category-key"
 private val filterRailItem1 = FILTER_RAIL_ALL
 private val filterRailItem2 = FilterRailItem(id = 1, value = "Category 1")
 private val filterRailItem3 = FilterRailItem(id = 2, value = "Category 2")
